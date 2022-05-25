@@ -1,7 +1,6 @@
 target Chisel
 
-reactor Preamble {
-    public preamble {
+public preamble {=
         class GcdInputBundle(val w: Int) extends Bundle {
             val value1 = UInt(w.W)
             val value2 = UInt(w.W)
@@ -10,8 +9,7 @@ reactor Preamble {
         class GcdOutputBundle(val w: Int) extends Bundle {
             val gcd = UInt(w.W)
         }
-    }
-}
+=}
 
 reactor Source {
     timer t1(100 msec, 100 msec);
@@ -61,12 +59,7 @@ reactor GCD {
                 regState := sExec
             }
 
-            is (sExec)#### Deadlines
-
-
-
-            ### Reactors {
-
+            is (sExec) {
                 when (regX === 0.U || regY === 0.U) {
                     regState := sDone
                 }.otherwise {
