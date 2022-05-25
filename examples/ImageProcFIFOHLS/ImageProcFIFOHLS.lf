@@ -1,0 +1,48 @@
+target Cpp
+
+public preamble {=
+    #define IMAGE_HEIGHT 100
+    #define IMAGE_WIDTH 100
+    #include "ap_int.h"
+    #include "hls_stream.h"
+    
+    struct pixel_t {
+        ap_uint<8> r;
+        ap_uint<8> g;
+        ap_uint<8> b;
+    }; 
+
+    typedef hls::stream<pixel_t> pixel_stream_t
+=}
+
+reactor ImageProc {
+    input in:pixel_stream_t // FIFO port. Its known since it is a hls::stream type
+
+    reaction(in) {=
+        for (int i = 0; i<IMAGE_HEIGHT*IMAGE_WIDTH; i++) {
+            pixel_t input = in.get().read();
+            // Do something with pixel
+        }
+    =}
+}
+
+reactor Source {
+    output out:pixel_stream_t
+    timer t(20 msec, 20 msec);
+
+    reaction(t) -> out {=
+        // Somehow aquire image
+        // ...
+        // Write image to output port (which is a shared BRAM memory)
+        for (int i = 0; i<IMAGE_HEIGHT*IMAGE_WIDTH; i++) {
+            pixel_t pixel {i, i+1, i+2};
+            out.write(pixel);
+        }       
+    =}
+}
+
+main reactor {
+    source = new Source();
+    img_proc = new ImageProc();
+    source.out -> img_proc.in;
+}

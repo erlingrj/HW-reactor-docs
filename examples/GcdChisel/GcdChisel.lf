@@ -1,0 +1,117 @@
+target Chisel
+
+reactor Preamble {
+    public preamble {
+        class GcdInputBundle(val w: Int) extends Bundle {
+            val value1 = UInt(w.W)
+            val value2 = UInt(w.W)
+        }
+        
+        class GcdOutputBundle(val w: Int) extends Bundle {
+            val gcd = UInt(w.W)
+        }
+    }
+}
+
+reactor Source {
+    timer t1(100 msec, 100 msec);
+
+    output o1:GcdInputBundle(8)
+    output o2:UInt(8.W)
+    state idx:RegInit(0.U(8.W))
+
+
+    reaction(t1) -> o1,o2 {=
+        
+        val gcdInput = Wire(new GcdInputBundle(8))
+        gcdInput.value1 := idx.get()
+        gcdInput.value2 := ~idx.get()
+
+        o1.set(gcdInput)
+        o2.set(idx.get())
+
+        idx.set(idx.get() + 1.U)
+
+        lf_done() // Reaction body is repeated each CC until lf_done is called
+    =}
+}
+
+
+reactor GCD {
+    preamble {=
+        val sIdle :: sExec :: sDone :: Nil = Enum(3)
+    =}
+
+    input i1:GcdInputBundle(8)
+    output o1:GcdOutputBundle(8)
+
+    reaction(i1) -> o1  {=
+        val regState = RegInit(sIdle)
+        val regX = RegInit(0.U(8.W))
+        val regY = RegInit(0.U(8.W))
+
+
+        switch(regState) {
+            is (sIdle) {
+                regX := i1.get().value1
+                regY := i1.get().value2
+                regState := sExec
+            }
+
+            is (sExec)#### Deadlines
+
+
+
+            ### Reactors {
+
+                when (regX === 0.U || regY === 0.U) {
+                    regState := sDone
+                }.otherwise {
+                    when (regX > regY) {
+                        regX := regX - regY
+                    }.otherwise {
+                        regY := regY - regX
+                    }
+                }
+            }
+
+            is (sDone) {
+                val res = Wire(new GcdOutputBundle(8))
+                when (regX ==== 0.U) {
+                    res.gcd := regY
+                }.otherwie {
+                    res.gcd := regX
+                }
+                o1.set(res)
+                regState := sIdle
+                lf_done()
+            }
+        }        
+
+    =}   
+}
+
+
+reactor Sink {
+    input i1:GcdInputBundle(8)
+    input i2:GcdOutputBundle(8)
+
+    reaction(i1, i2) {=
+
+        val gcdInput = i1.get()
+        val gcdRes = i2.get()
+
+        printf(s"Times=${lf_get_elapsed_logical_time()} v1=${gcdInput.value1} v2=${gcdInput.value2} res=${gcdRes.gcd}") // Printf only printed during simulation
+
+        lf_done()
+    =}
+}
+
+main reactor {
+    source = new Source()
+    gcd = new GCD()
+    sink = new Sink()
+
+    source.o1, source.o2 -> gcd.i1, sink.i1
+    gcd.o1 -> sink.i2
+}

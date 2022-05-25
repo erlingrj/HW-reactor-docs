@@ -1,0 +1,91 @@
+target Cpp
+
+reactor RPreamble {
+    public preamble {=
+        #include "ap_uint.h"
+
+        typedef ap_uint<8> data_t;
+
+        struct GcdInputBundle {
+            data_t value1;
+            data_t value2;
+        };
+
+        struct GdcOutputBundle {
+            data_t gcd;
+        };
+    =}
+}
+
+reactor Source {
+    timer t1(100 msec, 100 msec);
+
+    output o1:GcdInputBundle
+    output o2:data_t
+    state idx:Reg<data_t>(0)
+
+    reaction(t1) -> o1,o2 {=
+        
+        GcdInputBundle gcd;
+        gcd.value1 = idx.get();
+        gcd.value2 = ~idx.get();
+
+        o1.set(gcd)
+        o2.set(idx.get())
+
+        idx.set(idx.get() + 1)
+
+    =}
+}
+
+
+reactor GCD {
+
+    input i1:GcdInputBundle
+    output o1:GcdOutputBundle
+
+    // Proposal. Annotate a reaction with Worst Case Execution Cycles
+    // @WCEC=256 (which is the max value of data_t)
+    reaction(i1) -> o1  {=
+        data_t x = i1.get().value1;
+        data_t y = i1.get().value2;
+
+        while( x != 0 && y != 0) {
+            if (x > y) {
+                x -= y;
+            } else {
+                y -= x;
+            }
+        }
+        
+        if (x == 0) {
+            o1.set(y);
+        } else {
+            o1.set(x);
+        }
+    =}   
+}
+
+
+reactor Sink {
+    input i1:GcdInputBundle
+    input i2:GcdOutputBundle
+
+    reaction(i1, i2) {=
+
+        val gcdInput = i1.get()
+        val gcdRes = i2.get()
+
+        cout << "Time=" <<lf_get_elapsed_logical_time() <<" v1=" <<gcdInput.value1;
+        cout <<" v2=" <<gcdInput.value2 <<" res=" <<gcdRes.gcd <<endl; 
+    =}
+}
+
+main reactor {
+    source = new Source()
+    gcd = new GCD()
+    sink = new Sink()
+
+    source.o1, source.o2 -> gcd.i1, sink.i1
+    gcd.o1 -> sink.i2
+}

@@ -1,0 +1,57 @@
+target Cpp
+
+public preamble {=
+    #define IMAGE_HEIGHT 100
+    #define IMAGE_WIDTH 100
+    #include "ap_int.h"
+
+    // Define a pixel struct with 8 bit unsigned values for each color band
+    //  ap_uint<8> is a Vitis HLS type
+    struct pixel_t {
+        ap_uint<8> r;
+        ap_uint<8> g;
+        ap_uint<8> b;
+    }; 
+
+    // Define img_t which is a type corresponding to 1 row of the image
+    //  this is a little hacky. Need to find a cleaner way
+    typedef struct img_t {pixel_t pixel[IMAGE_WIDTH];} img_t;
+=}
+
+reactor ImageProc {
+    input in:img_t[IMAGE_WIDTH]; // Call-by-reference port
+
+    reaction(in) {=
+        // TODO: Convolute image with a kernel
+        for (int i = 0; i<IMAGE_HEIGHT; i++) {
+            for (int j = 0; i<IMAGE_WIDTH; j++) {
+                pixel_t res = in.get()[i].pixel[j];
+            }
+        }
+        // Do something with output=
+    =}
+}
+
+reactor Source {
+    output out:img_t[IMAGE_WIDTH]; // Call-by-reference port
+    timer t(20 msec, 20 msec);
+
+    reaction(t) -> out {=
+        // Somehow aquire image
+        // ...
+        // Write image to output port (which is a shared BRAM memory)
+        for (int i = 0; i<IMAGE_HEIGHT; i++) {
+            for (int j = 0; j<IMAGE_WIDTH) {
+                out[i].pixel[j].r = i;
+                out[i].pixel[j].g = i+1;
+                out[i].pixel[j].b = i+2;
+            }
+        }       
+    =}
+}
+
+main reactor {
+    source = new Source();
+    img_proc = new ImageProc();
+    source.out -> img_proc.in;
+}

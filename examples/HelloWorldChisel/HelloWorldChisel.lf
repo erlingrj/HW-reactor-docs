@@ -1,0 +1,62 @@
+target chisel
+
+reactor Source {
+    timer t1(100 msec, 100 msec);
+
+    output o1:UInt(8.W)
+    output o2:UInt(8.W)
+    state idx:RegInit(0.U(8.W))
+
+
+    reaction(t1) -> o1,o2 {=
+        
+        o1.set(idx.get())
+        o2.set(idx.get() + 2.U)
+
+        idx.set(idx.get() + 1.U)
+
+        lf_done() // Reaction body is repeated each CC until lf_done is called
+    =}
+}
+
+
+reactor DataDependent {
+    input i1:UInt(8.W)
+    output o1:UInt(8.W)
+
+    reaction(i1) -> o1  {=
+        
+        when(i1.get() & 1.U == 1.U) { // Data dependent firing. Only if least significant bit is set (e.g. if it is an odd number)
+            o1.set(i1.get() + 1.U)
+        }
+
+        lf_done()        
+    =}   
+}
+
+
+reactor Sink {
+    input i1:UInt(8.W)
+    input i2:UInt(8.W)
+
+    reaction(i1, i2) {=
+        val res1 = WireInit(0.U(8.W))
+        val res2 = WireInit(0.U(8.W))
+
+        res1 := Mux(i1.is_present(), i1.get(), 0.U)
+        res2 := Mux(i2.is_present(), res1 + i2.get(), res2)
+
+        printf(s"Time=${lf_get_elapsed_logical_time()} res=${res2}") // Printf only printed during simulation
+
+        lf_done()
+    =}
+}
+
+main reactor {
+    source = new Source()
+    dep = new DataDependent()
+    sink = new Sink()
+
+    source.o1, source.o2 -> dep.i1, sink.i1
+    dep.o1 -> sink.i2
+}

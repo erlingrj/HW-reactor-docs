@@ -1,0 +1,57 @@
+target Cpp
+
+public preamble {=
+    #include "ap_int.h"
+    typedef ap_uint<8> data_t; 
+=}
+
+reactor Source {
+    timer t1(100 msec, 100 msec);
+
+    output o1:data_t
+    output o2:data_t
+    state idx:Reg<data_t>(0) 
+    // Reg is a Flip-flop based storage with zero-latency read
+    // Could also be Bram, URam etc
+    reaction(t1) -> o1,o2 {=
+        
+        o1.set(idx);
+        o2.set(idx + 2);
+        idx +=1;
+    =}
+}
+
+reactor DataDependent {
+    input i1:data_t
+    output o1:data_t
+
+    reaction(i1) -> o1  {=
+       
+        data_t in = i1.get();
+        if (in % 2 == 0) {
+            o1.set(in + 1);
+        }
+    =}   
+}
+
+reactor Sink {
+    input i1:data_t
+    input i2:data_t
+
+    reaction(i1, i2) {=
+        data_t in1 = if(i1.is_present()) i1.get() else 0
+        data_t in2 = if(i2.is_present()) i2.get() else 0
+        data_t res = in1+in2
+
+        cout <<"Time=" <<lf_get_elapsed_logical_time() <<"res= " <<res <<endl;
+    =}
+}
+
+main reactor {
+    source = new Source();
+    dep = new DataDependent();
+    sink = new Sink();
+
+    source.o1, source.o2 -> dep.i1, sink.i1;
+    dep.o1 -> sink.i2;
+}
