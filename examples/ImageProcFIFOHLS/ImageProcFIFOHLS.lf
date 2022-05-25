@@ -15,17 +15,6 @@ public preamble {=
     typedef hls::stream<pixel_t> pixel_stream_t
 =}
 
-reactor ImageProc {
-    input in:pixel_stream_t // FIFO port. Its known since it is a hls::stream type
-
-    reaction(in) {=
-        for (int i = 0; i<IMAGE_HEIGHT*IMAGE_WIDTH; i++) {
-            pixel_t input = in.get().read();
-            // Do something with pixel
-        }
-    =}
-}
-
 reactor Source {
     output out:pixel_stream_t
     timer t(20 msec, 20 msec);
@@ -40,6 +29,18 @@ reactor Source {
         }       
     =}
 }
+
+reactor ImageProc {
+    input in:pixel_stream_t // FIFO port. Its known since it is a hls::stream type
+
+    reaction(in) {=
+        for (int i = 0; i<IMAGE_HEIGHT*IMAGE_WIDTH; i++) {
+            pixel_t input = in.get().read();
+            // Do something with pixel
+        }
+    =}
+}
+
 
 main reactor {
     source = new Source();

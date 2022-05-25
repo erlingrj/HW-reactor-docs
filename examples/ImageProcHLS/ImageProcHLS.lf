@@ -18,20 +18,6 @@ public preamble {=
     typedef struct img_t {pixel_t pixel[IMAGE_WIDTH];} img_t;
 =}
 
-reactor ImageProc {
-    input in:img_t[IMAGE_WIDTH]; // Call-by-reference port
-
-    reaction(in) {=
-        // TODO: Convolute image with a kernel
-        for (int i = 0; i<IMAGE_HEIGHT; i++) {
-            for (int j = 0; i<IMAGE_WIDTH; j++) {
-                pixel_t res = in.get()[i].pixel[j];
-            }
-        }
-        // Do something with output=
-    =}
-}
-
 reactor Source {
     output out:img_t[IMAGE_WIDTH]; // Call-by-reference port
     timer t(20 msec, 20 msec);
@@ -49,6 +35,20 @@ reactor Source {
         }       
     =}
 }
+reactor ImageProc {
+    input in:img_t[IMAGE_WIDTH]; // Call-by-reference port
+
+    reaction(in) {=
+        // TODO: Convolute image with a kernel
+        for (int i = 0; i<IMAGE_HEIGHT; i++) {
+            for (int j = 0; i<IMAGE_WIDTH; j++) {
+                pixel_t res = in.get()[i].pixel[j];
+            }
+        }
+        // Do something with output=
+    =}
+}
+
 
 main reactor {
     source = new Source();
