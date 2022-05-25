@@ -67,4 +67,14 @@ We should support the following ports, this is largely inspired by how Vitis HLS
 
 
 #### Logical execution time
-- Each Reaction must be associated with a WCLET (in FPGA Clock Cycles). This is to calculate the critical path through the Reactor/Reaction Graph.
+- Each Reaction must be associated with a WCET (in FPGA Clock Cycles). This is to calculate the critical path through the Reactor/Reaction Graph.
+
+
+#### Dataflow Reactors
+I propose to add a special type of Reactor called Dataflow Reactor it has the following properties;
+1. No Actions or Timers
+2. Only a single Reaction per Reactor. E.g. no mutual exclusion
+
+The events on the ports of the Dataflow Reactor are untimed which means that the Dataflow Reactors are essentially an untimed domain in the Reactor graph. The Dataflow Reactors are not enabled in a schedule according to the dependencies between Reactors, rather, they are always enabled and synchronize themselves through ready/valid interfaces. They can only communicate througn call-by-value or FIFO interfaces (I think). Dataflow Reactors enables deeply pipelined Reactors which I think is just impossible if the Reactor semantics should be respected. Dataflow Reactors can increase performance at the cost of non-determinism. Connections between Dataflow Reactors and between Dataflow Reactors and normal Reactors should be physical to indicate the non-determinism that it can introduce.
+
+The HW Reactors can only implement true pipelines *inside* the Reactions. However, making a complex pipeline inside a Reaction makes the Critical Path longer and might be undesirable.
