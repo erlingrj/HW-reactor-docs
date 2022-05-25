@@ -16,8 +16,10 @@ reactor Preamble {
 reactor Source {
     timer t1(100 msec, 100 msec);
 
+    //@interface=direct
     output o1:GcdInputBundle(8)
     output o2:UInt(8.W)
+    //@storage=register
     state idx:RegInit(0.U(8.W))
 
 
@@ -42,6 +44,7 @@ reactor GCD {
         val sIdle :: sExec :: sDone :: Nil = Enum(3)
     =}
 
+    //@interface=direct
     input i1:GcdInputBundle(8)
     output o1:GcdOutputBundle(8)
 

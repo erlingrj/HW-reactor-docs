@@ -27,7 +27,7 @@ We should support the following ports, this is largely inspired by how Vitis HLS
 - A call-by-value port carries the actual data travels directly between the Reactors on wires.
 - This is the lowest hanging fruit IMO. 
 - An important limitation is that the data must be transferred in a single transaction (e.g. no array-like structure)
-- See [HelloWorldChisel](./examples/HelloWorldChisel/) and [GcdChisel](./examples/GcdChisel/) for such a port
+- See [HelloWorldChisel](./examples/HelloWorldChisel/), [HelloWorldHLS](./examples/HelloWorldHLS/), [GcdChisel](./examples/GcdChisel/) and [GcdHLS](./examples/GcdHLS/) for such examples of using such a port
 
 #### Call-by-reference ports
 - In call-by-value ports, data is written and read from a memory shared by the Reactors.
