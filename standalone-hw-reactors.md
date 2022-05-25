@@ -56,9 +56,9 @@ We should support the following ports, this is largely inspired by how Vitis HLS
 ### Reactions
 - Reactions are user-specified computational blocks.
 - In HDL the Reaction is a HW block which will keep executing each FPGA Clock Cycle (CC) until the user makes a call to an API function (lf_done())
-- In HDL the Reaction will probably be implemented as a state machine. See GcdChisel example for how a state machine is implemented in a Reaction
+- In HDL the Reaction will probably be implemented as a state machine. See [GcdChisel](./Examples/Standalone/GcdChisel/) example for how a state machine is implemented in a Reaction
 - In HLS the reaction is a C/C++ program which is executed until completion. The user must be careful not to include things like infinte loops, recursion and other non-synthesizable constructs.
-- In HLS the user must provide suitable #pragmas to the HLS compiler for pipelining etc.
+- In HLS the user must provide suitable #pragmas to the HLS compiler for pipelining etc. TODO: Add examples of using the pragmas
 
 ### Connections
 - The user will specify the connection between Reactions, Actions, Ports etc in a config file which is passed to the Top Level Reactor
