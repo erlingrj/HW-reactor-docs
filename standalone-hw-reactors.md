@@ -27,21 +27,21 @@ We should support the following ports, this is largely inspired by how Vitis HLS
 - A call-by-value port carries the actual data travels directly between the Reactors on wires.
 - This is the lowest hanging fruit IMO. 
 - An important limitation is that the data must be transferred in a single transaction (e.g. no array-like structure)
-- See [HelloWorldChisel](./examples/HelloWorldChisel/), [HelloWorldHLS](./examples/HelloWorldHLS/), [GcdChisel](./examples/GcdChisel/) and [GcdHLS](./examples/GcdHLS/) for such examples of using such a port
+- See [HelloWorldChisel](./Examples/Standalone/HelloWorldChisel/), [HelloWorldHLS](./Examples/Standalone/HelloWorldHLS/), [GcdChisel](./Examples/Standalone/GcdChisel/) and [GcdHLS](./Examples/Standalone/GcdHLS/) for such examples of using such a port
 
 #### Call-by-reference ports
 - In call-by-value ports, data is written and read from a memory shared by the Reactors.
 - This is either a off-chip DRAM or an on-chip BRAM. 
 - The ports will now consist of 1) A read/write interface to a RAM 2) A trigger interface to signal that there is data. This trigger interface should maybe also include the address into the RAM where the data is stored.
 - This would be used with arrays that needs random access. E.g. an image which we want to apply a kernel on
-- See [ImageProcHLS](./examples/ImageProcHLS/) for such an example
+- See [ImageProcHLS](./Examples/Standalone/ImageProcHLS/) for such an example
 
 #### FIFO ports
 - This is an special case of call-by-reference ports. Only we limit ourselves to accessing the array sequentially. If you e.g. want to add a constant weight to all pixel values of an image.
 - This is also realized by a BRAM memory decoupling the two Reactors. Only the BRAM is implementing a FIFO.
 - Here we only need ready-valid interface from the port to the FIFO.
 - The receiving Reactor will not start executing before the previous is completely done. There is really room for pipelining when you have a decoupling FIFO between 2 Reactors, but it is not clear to me ATM how Reactor semantics could be preserved while pipelining.  
-- See [ImageProcFIFOHLS](./examples/ImageProcFIFOHLS) for an example
+- See [ImageProcFIFOHLS](./Examples/Standalone/ImageProcFIFOHLS) for an example
 
 
 ### Actions
