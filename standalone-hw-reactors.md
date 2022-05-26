@@ -11,7 +11,7 @@ Both HLS and HDL target will be built ontop of a base Chisel Reactor framework w
 THe proposed implementation is inspired by Esterel/SCCharts where there is really no distinction between Physical and Logical time.
 
 Consider Reactor the following graph
-<img src="./Figs/Figures.png" width="400">
+<img src="./Figs/Figures.png" width="100">
 
 Each Reactor/Reaction has to be associated with a WCET given in a number of Clock Cycles. Based on this the Critical Path of the Reactor graph can be established which sets the upper bound on the frequency of the global clock signal. The frequency will be a number of FPGA clock cycles which in turn will have a physical clock frequency. E.g. 100MHz.
 During each Global Clock Cycle (GCC) the Reactors are enabled (their guards are enabled) in a pre-defined order (which is decided by the dependencies)
