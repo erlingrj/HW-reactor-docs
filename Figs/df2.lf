@@ -1,0 +1,15 @@
+target Python
+
+reactor R1 {
+    output row
+}
+
+reactor R2 {
+    input row
+}
+
+main reactor {
+    r1 = new R1()
+    r2 = new R2()
+    r1.row -> r2.row after 1 msec
+}

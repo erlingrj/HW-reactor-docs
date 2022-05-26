@@ -1,0 +1,15 @@
+target Python
+
+reactor R1 {
+    output img
+}
+
+reactor R2 {
+    input img
+}
+
+main reactor {
+    r1 = new R1()
+    r2 = new R2()
+    r1.img -> r2.img
+}
